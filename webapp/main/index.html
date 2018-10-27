@@ -41,19 +41,20 @@
                         data: c.toDataURL()
                     },
                     success: function(data) {
-                        console.log(data);
+                        // console.log(data);
                         $("#result").html(format(data));
                     }
                 })
             }
             c.onmousedown = function (event) {
-                // console.log(event);
+                console.log(event);
                 drawing = true;
                 ctx.moveTo(event.offsetX, event.offsetY);
                 ctx.beginPath();
             }
             c.onmouseup = function (event) {
-                // console.log(event);
+                console.log(event);
+                if (!drawing) return;
                 drawing = false;
                 ctx.lineTo(event.offsetX, event.offsetY);
                 ctx.stroke();
@@ -66,6 +67,7 @@
                     ctx.stroke();
                 }
             }
+            c.onmouseout = c.onmouseup;
             document.getElementById("clearButton").onclick = function() {
                 ctx.clearRect(0, 0, c.width, c.height);
                 ctx.fillStyle = "white";
