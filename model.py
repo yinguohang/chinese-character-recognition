@@ -73,4 +73,5 @@ def train():
             saver.save(sess, "ckpt/model.ckpt")
     sess.close()
 
-train()
+if __name__ == "__main__":
+    train()

@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5325c4e9-8ba3-4bd9-af51-39a1ba9d89b6" name="Default" comment="" />
+    <list default="true" id="5325c4e9-8ba3-4bd9-af51-39a1ba9d89b6" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/webapp/main/index.html" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/db.sqlite3" afterPath="$PROJECT_DIR$/webapp/db.sqlite3" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/test.png" afterPath="$PROJECT_DIR$/webapp/test.png" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/image_array.txt" afterPath="$PROJECT_DIR$/webapp/image_array.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/main/models.py" afterPath="$PROJECT_DIR$/webapp/main/models.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/main/urls.py" afterPath="$PROJECT_DIR$/webapp/main/urls.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/main/views.py" afterPath="$PROJECT_DIR$/webapp/main/views.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/webapp/webapp/settings.py" afterPath="$PROJECT_DIR$/webapp/webapp/settings.py" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,8 +23,8 @@
       <file leaf-file-name="model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="37" column="46" lean-forward="true" selection-start-line="37" selection-start-column="46" selection-end-line="37" selection-end-column="46" />
+            <state relative-caret-position="270">
+              <caret line="18" column="74" lean-forward="true" selection-start-line="18" selection-start-column="74" selection-end-line="18" selection-end-column="74" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -220,8 +229,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="37" column="46" lean-forward="true" selection-start-line="37" selection-start-column="46" selection-end-line="37" selection-end-column="46" />
+        <state relative-caret-position="270">
+          <caret line="18" column="74" lean-forward="true" selection-start-line="18" selection-start-column="74" selection-end-line="18" selection-end-column="74" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>

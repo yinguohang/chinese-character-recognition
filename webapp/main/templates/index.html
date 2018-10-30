@@ -47,13 +47,11 @@
                 })
             }
             c.onmousedown = function (event) {
-                console.log(event);
                 drawing = true;
                 ctx.moveTo(event.offsetX, event.offsetY);
                 ctx.beginPath();
             }
             c.onmouseup = function (event) {
-                console.log(event);
                 if (!drawing) return;
                 drawing = false;
                 ctx.lineTo(event.offsetX, event.offsetY);
@@ -61,7 +59,6 @@
                 upload();
             }
             c.onmousemove = function (event) {
-                // console.log(event);
                 if (drawing) {
                     ctx.lineTo(event.offsetX, event.offsetY);
                     ctx.stroke();

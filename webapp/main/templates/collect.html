@@ -1,0 +1,134 @@
+<html>
+    <head>
+        <title>Data Collection</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <script
+          src="https://code.jquery.com/jquery-3.3.1.js"
+          integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+          crossorigin="anonymous"></script>
+
+    </head>
+    <body>
+        <div class="container">
+        <div class="row">
+            <div class="col-lg-3">
+                <ul id="sidebar" class="list-group">
+                    
+                </ul>
+            </div>
+            <div class="col-lg-9">
+                <div style="text-align: center">
+                    <a href="logout">Log out</a>
+                </div>
+                <div style="text-align: center">
+                    <canvas id="myCanvas" width="200" height="200" style="border:1px solid #000000;">
+                    </canvas>
+                </div>
+                <div style="text-align: center;">
+                    <button id="submitButton" type="button">Submit</button>
+                    <button id="clearButton" type="button">Clear</button>
+                </div>
+            </div>
+        </div>
+        </div>
+        <style>
+            .selected {
+                background-color: #CCC;
+            }
+            .done {
+                color: #AAA;
+            }
+            .todo {
+                color: #F00;
+            }
+        </style>
+        <script type="text/javascript">
+            characters = {{characters | safe}};
+            doneList = new Set({{status | safe}});
+            parser = new DOMParser();
+            characters.forEach(function(element) {
+                var li = document.createElement("li");
+                console.log(element, doneList)
+                if (doneList.has(element)) {
+                    li.classList = "list-group-item character done";                    
+                } else {
+                    li.classList = "list-group-item character todo";                    
+                }
+                li.innerHTML = element;
+                document.getElementById("sidebar").appendChild(li);                
+            });
+
+            $(".character").click(function(e) {
+                currentItem = $(this)
+                current =currentItem.html();
+                $(".character").removeClass("selected");
+                $(this).addClass("selected");
+            })
+            currentItem = $($(".character")[0])
+            current = currentItem.html()
+            $($(".character")[0]).addClass("selected");
+
+
+            var c = document.getElementById("myCanvas");
+            var ctx = c.getContext("2d");
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.fillStyle = "black";
+            ctx.lineWidth = 5;
+            var drawing = false;
+            format = function (raw) {
+                raw = JSON.parse(raw)
+                rtn = "";
+                rtn += raw[0][0] + ": " + raw[0][1] + "<br>";
+                rtn += raw[1][0] + ": " + raw[1][1] + "<br>";
+                rtn += raw[2][0] + ": " + raw[2][1] + "<br>";
+                return rtn;
+            }
+            upload = function () {
+                if (!(doneList.has(current)))
+                    doneList.add(current)
+                $.ajax({
+                    url: "submit",
+                    method: "POST",
+                    data: {
+                        data: c.toDataURL(),
+                        current: current,
+                        status: JSON.stringify(Array.from(doneList))
+                    },
+                    success: function(data) {
+                        currentItem.removeClass("todo");
+                        currentItem.addClass("done");
+                    }
+                })
+            }
+            c.onmousedown = function (event) {
+                drawing = true;
+                ctx.moveTo(event.offsetX, event.offsetY);
+                ctx.beginPath();
+            }
+            c.onmouseup = function (event) {
+                if (!drawing) return;
+                drawing = false;
+                ctx.lineTo(event.offsetX, event.offsetY);
+                ctx.stroke();
+            }
+            c.onmousemove = function (event) {
+                if (drawing) {
+                    ctx.lineTo(event.offsetX, event.offsetY);
+                    ctx.stroke();
+                }
+            }
+            c.onmouseout = c.onmouseup;
+            $("#clearButton").click(function() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.fillStyle = "black";
+            })
+            $("#submitButton").click(function() {
+                upload();
+            });
+
+        </script>
+    </body>
+</html>

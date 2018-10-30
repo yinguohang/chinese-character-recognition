@@ -6,66 +6,27 @@ import numpy as np
 import tensorflow.contrib.slim as slim
 from PIL import Image
 import json
+from main.models import User
+import os
+from django.core.exceptions import ValidationError
+import sys
+sys.path.append("../")
+from model import Config, build_cnn
 
 import base64
-
-class Config:
-    def __init__(self, character_count, top_k):
-        self.character_count = character_count
-        self.top_k = top_k
 
 __test_image_file  = 'test.png'
 __global_times = 0
 __checkpoint_dir = "../ckpt/"
 __code_to_chinese_file = "../characters.txt"
 
-def build_cnn(config):
-    # with tf.device('/cpu:0'):
-    keep_prob = tf.placeholder(dtype=tf.float32, shape=[], name='keep_prob')
-    images = tf.placeholder(dtype=tf.float32, shape=[None, 64, 64, 1], name='image_batch') # image_size 64x64
-    labels = tf.placeholder(dtype=tf.int64, shape=[None], name='label_batch')
+def load_characters(filename):
+    rtn = []
+    for line in open(filename).readlines():
+        rtn.append(line.strip())
+    return rtn
 
-    # [Different definition of "SAME"]
-    conv_1 = tf.layers.conv2d(images, 64, [3, 3], 1, padding='SAME', name='conv1')  # image_size 62x62
-    max_pool_1 = tf.layers.max_pooling2d(conv_1, [2, 2], [2, 2], padding='SAME', name='max_pool1')      # image_size 31x31
-    conv_2 = tf.layers.conv2d(max_pool_1, 128, [3, 3], padding='SAME', name='conv2')   # image_size 29x29
-    max_pool_2 = tf.layers.max_pooling2d(conv_2, [2, 2], [2, 2], padding='SAME', name='max_pool2')      # image_size 15x15
-    conv_3 = tf.layers.conv2d(max_pool_2, 256, [3, 3], padding='SAME', name='conv3')      # image_size 13x13
-    max_pool_3 = tf.layers.max_pooling2d(conv_3, [2, 2], [2, 2], padding='SAME', name='max_pool3')      # image_size 7x7
-
-    flatten = tf.layers.flatten(max_pool_3)
-    fc1 = slim.fully_connected(tf.layers.dropout(flatten, keep_prob), 1024, activation_fn=tf.nn.tanh, scope='fc1')  # 激活函数tanh
-    logits = slim.fully_connected(tf.layers.dropout(fc1, keep_prob), config.character_count, activation_fn=None, scope='fc2') # 无激活函数
-    loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)) # softmax
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, 1), labels), tf.float32)) # 计算准确率
-
-    global_step = tf.get_variable("step", [], initializer=tf.constant_initializer(0.0), trainable=False)
-    rate = tf.train.exponential_decay(2e-4, global_step, decay_steps=2000, decay_rate=0.97, staircase=True) #
-    train_op = tf.train.AdamOptimizer(learning_rate=rate).minimize(loss, global_step=global_step) # 自动调节学习率的随机梯度下降算法训练模型
-    probabilities = tf.nn.softmax(logits) #
-
-    tf.summary.scalar('loss', loss)
-    tf.summary.scalar('accuracy', accuracy)
-    merged_summary_op = tf.summary.merge_all()
-    predicted_val_top_k, predicted_index_top_k = tf.nn.top_k(probabilities, k=config.top_k)
-    accuracy_in_top_k = tf.reduce_mean(tf.cast(tf.nn.in_top_k(probabilities, labels, config.top_k), tf.float32))
-
-    return {
-        'images': images,
-        'labels': labels,
-        'keep_prob': keep_prob,
-        'top_k': config.top_k,
-        'global_step': global_step,
-        'train_op': train_op,
-        'loss': loss,
-        'accuracy': accuracy,
-        'accuracy_top_k': accuracy_in_top_k,
-        'merged_summary_op': merged_summary_op,
-        'predicted_distribution': probabilities,
-        'predicted_index_top_k': predicted_index_top_k,
-        'predicted_val_top_k': predicted_val_top_k
-    }
-
+characters = load_characters(__code_to_chinese_file)
 
 def predictPrepare():
     sess = tf.Session()
@@ -96,6 +57,60 @@ def load_dict():
 
 def index(request):
     return render(request, 'index.html')
+
+def collect(request):
+    if "user" not in request.session:
+        return render(request, 'login_or_register.html')
+    user = User.objects.filter(username = request.session["user"]).first()
+    return render(request, 'collect.html', 
+        context={"characters": characters, "status": user.status})
+
+def logout(request):
+    del request.session["user"]
+    return render(request, 'login_or_register.html')    
+
+@csrf_exempt
+def submit(request):
+    if "user" not in request.session:
+        return HttpResponse(json.dumps({"status": "error", "message": "login first"}))
+    user = User.objects.filter(username = request.session["user"]).first()
+    if "status" not in request.POST or "current" not in request.POST or "data" not in request.POST:
+        return HttpResponse(json.dumps({"status": "error", "message": "missing parameters"}))
+    status = request.POST.get("status")
+    current = request.POST.get("current")
+    data = request.POST.get("data")
+    image = base64.b64decode(data[22:])
+    file = open(os.path.join("images", user.username, current + ".png"), 'wb')
+    file.write(image)
+    file.close()
+    user.status = status
+    user.save()
+    return HttpResponse(json.dumps({"status": "success"}))
+
+def loginOrRegisterPage(request):
+    return render(request, 'login_or_register.html')
+
+@csrf_exempt
+def login(request):
+    if "username" not in request.POST or len(request.POST.get("username")) == 0:
+        return HttpResponse(json.dumps({"status": "error", "message": "missing username parameters"}))
+    if len(User.objects.filter(username = request.POST.get("username"))) == 0:
+        return HttpResponse(json.dumps({"status": "error", "message": "Invalid username"}))    
+    user = User.objects.filter(username = request.POST.get("username")).first()
+    request.session["user"] = user.username
+    return HttpResponse(json.dumps({"status": "success"}))
+
+@csrf_exempt
+def register(request):
+    if "username" not in request.POST or len(request.POST.get("username")) == 0:
+        return HttpResponse(json.dumps({"status": "error", "message": "missing username parameters"}))
+    if len(User.objects.filter(username = request.POST.get("username"))) != 0:
+        return HttpResponse(json.dumps({"status": "error", "message": "duplicate username"}))    
+    user = User.create(request.POST.get("username"))
+    user.save()    
+    os.makedirs(os.path.join("images", request.POST.get("username")))
+    request.session["user"] = user.username
+    return HttpResponse(json.dumps({"status": "success"}))
 
 @csrf_exempt
 def recognition(request):
