@@ -123,11 +123,11 @@ def recognition(request):
     global __global_times
     if (__global_times == 0):
         global __graph1, __sess1
-        __graph1, __sess1 = predictPrepare() #加载模型，准备好预测
+        __graph1, __sess1 = predictPrepare() # Load model
         __global_times = 1        
     temp_image = imagePrepare(__test_image_file)
     predict_val, predict_index = __sess1.run([__graph1['predicted_val_top_k'], __graph1['predicted_index_top_k']],
-                                          feed_dict={__graph1['images']: temp_image, __graph1['keep_prob']: 1.0}) # 预测top3的汉字编码以及相应的准确率
+                                          feed_dict={__graph1['images']: temp_image, __graph1['keep_prob']: 1.0}) 
     word_dict = load_dict()
     return HttpResponse(json.dumps([
             [word_dict[predict_index[0][0]], str(predict_val[0][0])],
