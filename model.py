@@ -23,8 +23,8 @@ def build_cnn(config):
     max_pool_3 = tf.layers.max_pooling2d(conv_3, [2, 2], [2, 2], padding='SAME', name='max_pool3')      # image_size 7x7
 
     flatten = tf.layers.flatten(max_pool_3)
-    fc1 = slim.fully_connected(tf.layers.dropout(flatten, keep_prob), 1024, activation_fn=tf.nn.tanh, scope='fc1')  # tanh
-    logits = slim.fully_connected(tf.layers.dropout(fc1, keep_prob), config.character_count, activation_fn=None, scope='fc2') # No activation function
+    fc1 = slim.fully_connected(slim.dropout(flatten, keep_prob), 1024, activation_fn=tf.nn.tanh, scope='fc1')  # tanh
+    logits = slim.fully_connected(slim.dropout(fc1, keep_prob), config.character_count, activation_fn=None, scope='fc2') # No activation function
     loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)) # softmax
     accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, 1), labels), tf.float32)) # acc
 
@@ -63,7 +63,7 @@ def train():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        for iter in range(100):
+        for iter in range(10):
             _, loss, acc = sess.run([model["train_op"], model["loss"], model["accuracy"]], feed_dict={
                 model["images"]: X,
                 model["labels"]: y,

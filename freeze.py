@@ -1,4 +1,5 @@
-from model import build_cnn
+from model import build_cnn, Config
+import tensorflow as tf
 
 def exportPbFile():
     sess = tf.Session()
@@ -16,7 +17,7 @@ def exportBytesFile():
     from tensorflow.python.tools import freeze_graph
     freeze_graph.freeze_graph(input_graph = 'graph.pb',
                   input_binary = False,
-                  input_checkpoint = "train_model/checkpoint/model.ckpt.data-00000-of-00001",
+                  input_checkpoint = "ckpt/model.ckpt",
                   output_node_names = "TopKV2",
                   output_graph = 'graph.bytes' ,
                   clear_devices = True, initializer_nodes = "",input_saver = "",
