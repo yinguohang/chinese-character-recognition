@@ -22,7 +22,7 @@ __code_to_chinese_file = "../characters.txt"
 
 def load_characters(filename):
     rtn = []
-    for line in open(filename).readlines():
+    for line in open(filename, encoding="utf-8").readlines():
         rtn.append(line.strip())
     return rtn
 
@@ -128,7 +128,7 @@ def recognition(request):
     temp_image = imagePrepare(__test_image_file)
     predict_val, predict_index = __sess1.run([__graph1['predicted_val_top_k'], __graph1['predicted_index_top_k']],
                                           feed_dict={__graph1['images']: temp_image, __graph1['keep_prob']: 1.0}) 
-    word_dict = load_dict()
+    word_dict = load_characters(__code_to_chinese_file)
     return HttpResponse(json.dumps([
             [word_dict[predict_index[0][0]], str(predict_val[0][0])],
             [word_dict[predict_index[0][1]], str(predict_val[0][1])],

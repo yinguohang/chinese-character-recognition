@@ -63,7 +63,7 @@ def train():
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        for iter in range(10):
+        for iter in range(100):
             _, loss, acc = sess.run([model["train_op"], model["loss"], model["accuracy"]], feed_dict={
                 model["images"]: X,
                 model["labels"]: y,
